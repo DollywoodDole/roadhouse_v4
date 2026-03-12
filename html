@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoadHouse — Community Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0906;
+    --bg2: #110f0c;
+    --bg3: #1a1710;
+    --gold: #c9993a;
+    --gold2: #e8c46a;
+    --gold3: #f5e09a;
+    --rust: #8b3a1a;
+    --rust2: #c4501f;
+    --cream: #f0e8d0;
+    --muted: #6b6050;
+    --line: #2a2520;
+    --green: #4a7c59;
+    --green2: #6abf7c;
+    --red: #8b2a2a;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Playfair Display', serif;
+    --body: 'Libre Baskerville', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.35;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 58px;
+    background: rgba(10,9,6,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-brand {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--gold2);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold2); }
+
+  .nav-live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--green2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green2);
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(106,191,124,0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(106,191,124,0); }
+  }
+
+  /* ── HERO ── */
+  #home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 80% 40%, rgba(201,153,58,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 20% 70%, rgba(139,58,26,0.06) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, rgba(17,15,12,1) 100%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,153,58,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,153,58,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 70%, transparent 100%);
+  }
+
+  .hero-rule {
+    position: absolute;
+    top: 0; left: 60px; right: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.3;
+    top: 58px;
+  }
+
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(52px, 8vw, 110px);
+    font-weight: 900;
+    line-height: 0.9;
+    color: var(--cream);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold2);
+  }
+
+  .hero-sub {
+    font-family: var(--body);
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.6s forwards;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--gold);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold2);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
+    background: transparent;
+    color: var(--cream);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--gold);
+    color: var(--gold2);
+  }
+
+  .hero-stats {
+    position: absolute;
+    right: 60px;
+    bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    opacity: 0;
+    animation: fadeLeft 0.9s 1s forwards;
+  }
+
+  .hstat {
+    text-align: right;
+  }
+
+  .hstat-val {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--gold2);
+    display: block;
+  }
+
+  .hstat-lbl {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 100px 60px;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+    max-width: 80px;
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 56px;
+    font-size: 15px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 0 60px;
+  }
+
+  /* ── DASHBOARD METRICS ── */
+  #dashboard {
+    background: var(--bg2);
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+
+  .metric-card {
+    background: var(--bg2);
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .metric-card:hover::before { opacity: 1; }
+
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .metric-val {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--gold2);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .metric-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .metric-delta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--green2);
+  }
+
+  .metric-delta.neg { color: #c46a6a; }
+
+  /* Treasury chart */
+  .treasury-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .treasury-panel {
+    background: var(--bg3);
+    border: 1px solid var(--line);
+    padding: 32px;
+  }
+
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lux-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .lux-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lux-bar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    width: 90px;
+    flex-shrink: 0;
+  }
+
+  .lux-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lux-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 1s ease;
+  }
+
+  .lux-bar-pct {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold2);
+    width: 36px;
+    text-align: right;
+  }
+
+  /* Revenue table */
+  .rev-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rev-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rev-table td {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--cream);
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(42,37,32,0.5);
+  }
+
+  .rev-table tr:last-child td { border-bottom: none; }
+  .rev-table td:last-child { color: var(--gold2); }
+
+  .rev-total td {
+    color: var(--gold2) !important;
+    font-weight: 500;
+    border-top: 1px solid var(--line) !important;
+  }
+
+  /* ── GUILDS ── */
+  #guilds { background: var(--bg); }
+
+  .guilds-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .guild-card {
+    background: var(--bg);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .guild-card:hover { background: var(--bg2); }
+
+  .guild-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .guild-name {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-style: italic;
+    color: var(--gold2);
+    margin-bottom: 6px;
+  }
+
+  .guild-domain {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .guild-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .guild-kpi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .kpi-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,153,58,0.3);
+    padding: 4px 10px;
+  }
+
+  .guild-status {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--green2);
+    margin-left: auto;
+    letter-spacing: 0.1em;
+  }
+
+  .guild-responsibilities {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .guild-responsibilities li {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    padding: 4px 0;
+    list-style: none;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .guild-responsibilities li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+  }
+
+  /* ── MEMBERSHIP LADDER ── */
+  #membership { background: var(--bg2); }
+
+  .ladder {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--line);
+  }
+
+  .rung {
+    display: grid;
+    grid-template-columns: 40px 140px 1fr auto auto;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.2s;
+    cursor: default;
+  }
+
+  .rung:last-child { border-bottom: none; }
+  .rung:hover { background: var(--bg3); }
+
+  .rung-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--line);
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .rung.active .rung-num { color: var(--gold2); }
+
+  .rung-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--cream);
+  }
+
+  .rung.active .rung-title { color: var(--gold2); }
+
+  .rung-access {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .rung-threshold {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .rung-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .rung.active .rung-badge {
+    border-color: var(--gold);
+    background: rgba(201,153,58,0.1);
+  }
+
+  /* ── ROADMAP ── */
+  #roadmap { background: var(--bg); }
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .phase {
+    background: var(--bg);
+    padding: 36px 32px;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--line);
+    line-height: 1;
+  }
+
+  .phase-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--rust2);
+    color: var(--rust2);
+  }
+
+  .phase-tag.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(201,153,58,0.08);
+  }
+
+  .phase-tag.upcoming {
+    border-color: var(--muted);
+    color: var(--muted);
+  }
+
+  .phase-name {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+
+  .phase-period {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+
+  .phase-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .phase-items li {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .phase-items li::before {
+    content: '◇';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 8px;
+    top: 2px;
+  }
+
+  .phase-items li.done { color: var(--green2); }
+  .phase-items li.done::before { content: '◆'; color: var(--green2); }
+
+  .phase-range {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--gold2);
+  }
+
+  .phase-range span {
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  /* ── GRANTS ── */
+  #grants { background: var(--bg2); }
+
+  .grants-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--line);
+  }
+
+  .grants-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 20px;
+    text-align: left;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grants-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(42,37,32,0.5);
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  .grants-table tr:last-child td { border-bottom: none; }
+
+  .grant-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cream);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .grant-admin {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .grant-amount {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--gold2);
+    white-space: nowrap;
+  }
+
+  .grant-status {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid;
+  }
+
+  .status-q1 { color: var(--gold); border-color: rgba(201,153,58,0.4); }
+  .status-q2 { color: var(--rust2); border-color: rgba(196,80,31,0.4); }
+  .status-y2 { color: var(--muted); border-color: var(--line); }
+  .status-target { color: var(--green2); border-color: rgba(106,191,124,0.4); }
+
+  .grants-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 20px;
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--gold);
+    margin-top: 2px;
+  }
+
+  .grants-total-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .grants-total-val {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--gold2);
+  }
+
+  /* ── FIVE YEAR TABLE ── */
+  #projections { background: var(--bg); }
+
+  .proj-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--line);
+  }
+
+  .proj-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 20px;
+    text-align: left;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .proj-table td {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(42,37,32,0.5);
+    color: var(--cream);
+  }
+
+  .proj-table .highlight-row td {
+    background: rgba(201,153,58,0.06);
+    color: var(--gold2);
+  }
+
+  .proj-table td:first-child {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .trend-bar {
+    display: inline-block;
+    height: 3px;
+    background: var(--gold);
+    vertical-align: middle;
+    margin-left: 8px;
+    opacity: 0.6;
+  }
+
+  /* ── COMMUNITY FEED ── */
+  #feed { background: var(--bg2); }
+
+  .feed-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .feed-panel {
+    background: var(--bg2);
+    padding: 36px 32px;
+  }
+
+  .feed-platform {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .feed-icon {
+    width: 36px; height: 36px;
+    background: var(--bg3);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .feed-platform-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--cream);
+    letter-spacing: 0.1em;
+  }
+
+  .feed-platform-handle {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .feed-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    margin-left: auto;
+  }
+
+  .feed-link:hover { color: var(--gold2); }
+
+  .feed-post {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(42,37,32,0.5);
+  }
+
+  .feed-post:last-child { border-bottom: none; }
+
+  .feed-post-text {
+    font-size: 13px;
+    color: var(--cream);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .feed-post-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── OPPORTUNITIES ── */
+  #opportunities { background: var(--bg); }
+
+  .ops-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--line);
+    margin-bottom: 2px;
+  }
+
+  .op-card {
+    background: var(--bg);
+    padding: 36px 32px;
+    transition: background 0.2s;
+  }
+
+  .op-card:hover { background: var(--bg2); }
+
+  .op-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  .op-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--cream);
+    margin-bottom: 12px;
+  }
+
+  .op-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .op-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .op-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    padding: 3px 9px;
+  }
+
+  .op-apply {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+
+  .op-apply:hover { color: var(--gold2); }
+
+  /* ── COCONUT COWBOY (product card) ── */
+  #product { background: var(--bg2); }
+
+  .cc-card {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .cc-visual {
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    padding: 60px;
+    border-right: 1px solid var(--line);
+  }
+
+  .cc-info {
+    padding: 48px;
+  }
+
+  .cc-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .cc-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-style: italic;
+    color: var(--gold2);
+    margin-bottom: 8px;
+  }
+
+  .cc-tagline {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .cc-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 460px;
+  }
+
+  .cc-abv {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 32px;
+  }
+
+  /* ── CONTACT ── */
+  #contact { background: var(--bg); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .contact-panel {
+    background: var(--bg);
+    padding: 48px 40px;
+  }
+
+  .contact-channels {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .contact-ch {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--line);
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+
+  .contact-ch:hover { border-color: var(--gold); }
+
+  .ch-icon {
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg2);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .ch-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .ch-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--cream);
+  }
+
+  /* Form */
+  .form-field {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--gold);
+  }
+
+  .form-textarea { resize: vertical; min-height: 120px; }
+
+  .form-select option { background: var(--bg2); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--line);
+    padding: 60px 60px 40px;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .footer-brand {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-style: italic;
+    color: var(--gold2);
+    margin-bottom: 12px;
+  }
+
+  .footer-tagline {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--gold2); }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-entity {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ── TOKEN SECTION ── */
+  #token { background: var(--bg); }
+
+  .token-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--line);
+    margin-bottom: 2px;
+  }
+
+  .token-panel {
+    background: var(--bg);
+    padding: 36px 32px;
+  }
+
+  .donut-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 32px;
+  }
+
+  .donut-svg { transform: rotate(-90deg); }
+
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .donut-val {
+    font-family: var(--mono);
+    font-size: 24px;
+    color: var(--gold2);
+  }
+
+  .donut-lbl {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .token-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cream);
+    flex: 1;
+  }
+
+  .legend-pct {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  .token-utilities {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .utility-item {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    transition: border-color 0.2s;
+  }
+
+  .utility-item:hover { border-color: rgba(201,153,58,0.3); }
+
+  .utility-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+
+  .utility-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .utility-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── PRINCIPLES ── */
+  #principles { background: var(--bg2); }
+
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--line);
+  }
+
+  .principle {
+    background: var(--bg2);
+    padding: 36px 32px;
+  }
+
+  .principle-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .principle-name {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-style: italic;
+    color: var(--gold2);
+    margin-bottom: 10px;
+  }
+
+  .principle-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── INVESTOR CTA ── */
+  .investor-cta {
+    border: 1px solid var(--line);
+    padding: 56px 60px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 48px;
+    margin-top: 2px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .investor-cta::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  .investor-cta-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-style: italic;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+
+  .investor-cta-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  .investor-cta-raise {
+    text-align: right;
+  }
+
+  .raise-val {
+    font-family: var(--mono);
+    font-size: 36px;
+    color: var(--gold2);
+    display: block;
+  }
+
+  .raise-lbl {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    section { padding: 70px 24px; }
+    .divider { margin: 0 24px; }
+    #home { padding: 0 24px 70px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .treasury-row { grid-template-columns: 1fr; }
+    .guilds-grid { grid-template-columns: 1fr; }
+    .phases { grid-template-columns: 1fr; }
+    .ops-grid { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .cc-card { grid-template-columns: 1fr; }
+    .cc-visual { padding: 40px; }
+    .rung { grid-template-columns: 30px 110px 1fr; }
+    .rung-threshold, .rung-badge { display: none; }
+    .hero-stats { display: none; }
+    .investor-cta { grid-template-columns: 1fr; }
+    .investor-cta-raise { text-align: left; }
+    .feed-grid { grid-template-columns: 1fr; }
+    .principles-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#home" class="nav-brand">RoadHouse</a>
+  <ul class="nav-links">
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#guilds">Guilds</a></li>
+    <li><a href="#membership">Membership</a></li>
+    <li><a href="#token">$LUX</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#opportunities">Opportunities</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-live">
+    <div class="live-dot"></div>
+    <a href="https://kick.com/dollywooddole" target="_blank" style="color: inherit; text-decoration: none;">Live on Kick</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-rule"></div>
+
+  <div style="position: relative;">
+    <p class="hero-label">Est. Saskatchewan, Canada · March 2026 · v2.0</p>
+    <h1 class="hero-title">Welcome to<br>the <em>RoadHouse.</em></h1>
+    <p class="hero-sub">A creator-owned ecosystem converting streaming attention into community capital, treasury assets, and investable IP. Discretion isn't a rule — it's a reflex.</p>
+    <div class="hero-ctas">
+      <a href="https://kick.com/dollywooddole" target="_blank" class="btn-primary">▶ Watch Live on Kick</a>
+      <a href="#dashboard" class="btn-ghost">◈ Community Dashboard</a>
+      <a href="#guilds" class="btn-ghost">◇ Guild System</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <span class="hstat-val">Y1</span>
+      <span class="hstat-lbl">Phase Active</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-val">$149k</span>
+      <span class="hstat-lbl">Revenue Target</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-val">10.5%</span>
+      <span class="hstat-lbl">Effective Tax Rate</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-val">$300k+</span>
+      <span class="hstat-lbl">Grant Potential Y1</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+  <div class="section-label">◈ Community Dashboard</div>
+  <h2 class="section-title">Treasury &amp; <em>Community</em> Metrics</h2>
+  <p class="section-sub">Live operational snapshot — Phase 1 Foundation. Year 1 targets sourced from the Praetorian Holdings investor memorandum.</p>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Audience (Target)</div>
+      <div class="metric-val">20k</div>
+      <div class="metric-sub">Year 1 follower target</div>
+      <div class="metric-delta">↑ Across all platforms</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Revenue Target Y1</div>
+      <div class="metric-val">$149k</div>
+      <div class="metric-sub">CAD — all streams</div>
+      <div class="metric-delta">↑ $80k earned + $69k grants</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DAO Treasury (Y1 Target)</div>
+      <div class="metric-val">$15k</div>
+      <div class="metric-sub">CAD cumulative</div>
+      <div class="metric-delta">↑ 50% of net reinvested</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Grant Pipeline</div>
+      <div class="metric-val">$265k</div>
+      <div class="metric-sub">Non-dilutive minimum</div>
+      <div class="metric-delta">↑ Up to $1.05M total</div>
+    </div>
+  </div>
+
+  <div class="treasury-row">
+    <div class="treasury-panel">
+      <div class="panel-title">$LUX Token Allocation</div>
+      <div class="lux-bars">
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Community</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:25%;background:#c9993a"></div></div>
+          <span class="lux-bar-pct">25%</span>
+        </div>
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Treasury</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:25%;background:#e8c46a"></div></div>
+          <span class="lux-bar-pct">25%</span>
+        </div>
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Creators</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:22%;background:#8b3a1a"></div></div>
+          <span class="lux-bar-pct">22%</span>
+        </div>
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Founders</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:18%;background:#4a7c59"></div></div>
+          <span class="lux-bar-pct">18%</span>
+        </div>
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Partners</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:10%;background:#6b6050"></div></div>
+          <span class="lux-bar-pct">10%</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line);">
+        <div class="panel-title" style="margin-bottom: 12px;">Reinvestment Policy</div>
+        <div class="lux-bar-row" style="margin-bottom:10px">
+          <span class="lux-bar-label">DAO Treasury</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:50%"></div></div>
+          <span class="lux-bar-pct">50%</span>
+        </div>
+        <div class="lux-bar-row" style="margin-bottom:10px">
+          <span class="lux-bar-label">Operations</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:25%;background:#6b6050"></div></div>
+          <span class="lux-bar-pct">25%</span>
+        </div>
+        <div class="lux-bar-row" style="margin-bottom:10px">
+          <span class="lux-bar-label">Active Projects</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:15%;background:#8b3a1a"></div></div>
+          <span class="lux-bar-pct">15%</span>
+        </div>
+        <div class="lux-bar-row">
+          <span class="lux-bar-label">Founder Draw</span>
+          <div class="lux-bar-track"><div class="lux-bar-fill" style="width:10%;background:#4a7c59"></div></div>
+          <span class="lux-bar-pct">10%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="treasury-panel">
+      <div class="panel-title">Year 1 Revenue Architecture</div>
+      <table class="rev-table">
+        <thead>
+          <tr>
+            <th>Stream</th>
+            <th>Y1</th>
+            <th>Y3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Streaming Ad Revenue</td><td>$12k</td><td>$80k</td></tr>
+          <tr><td>Subscriptions / Memberships</td><td>$20k</td><td>$150k</td></tr>
+          <tr><td>Sponsorships</td><td>$18k</td><td>$200k</td></tr>
+          <tr><td>Merchandise</td><td>$8k</td><td>$60k</td></tr>
+          <tr><td>Digital Products</td><td>$6k</td><td>$50k</td></tr>
+          <tr><td>IP Licensing</td><td>$5k</td><td>$40k</td></tr>
+          <tr><td>Events</td><td>$0</td><td>$80k</td></tr>
+          <tr><td>DAO Investments</td><td>$0</td><td>$120k</td></tr>
+          <tr><td>Grants (non-dilutive)</td><td>$80k</td><td>$120k</td></tr>
+          <tr class="rev-total"><td>Total</td><td>$149k</td><td>$900k</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- GUILDS -->
+<section id="guilds">
+  <div class="section-label">◇ Guild Architecture</div>
+  <h2 class="section-title">Four Guilds.<br><em>One Ecosystem.</em></h2>
+  <p class="section-sub">The RoadHouse operates through four specialized guilds — each with its own domain, KPI, and governance mandate within the DAO framework.</p>
+
+  <div class="guilds-grid">
+    <div class="guild-card">
+      <span class="guild-icon">📡</span>
+      <div class="guild-name">Media Guild</div>
+      <div class="guild-domain">Content Creation</div>
+      <div class="guild-desc">The front-facing engine of the RoadHouse. Responsible for all streaming, short-form video, VOD clipping, social distribution, and international translation of content. Every view begins here.</div>
+      <div class="guild-kpi">
+        <span class="kpi-tag">KPI: Monthly Reach</span>
+        <span class="guild-status">● Recruiting</span>
+      </div>
+      <ul class="guild-responsibilities">
+        <li>Live streaming on Kick — long-form, unfiltered</li>
+        <li>Short-form content on TikTok (@roadhousesyndicate)</li>
+        <li>VOD clipping and highlight distribution</li>
+        <li>Multilingual content translation</li>
+        <li>Social media management across platforms</li>
+      </ul>
+    </div>
+
+    <div class="guild-card">
+      <span class="guild-icon">⚙️</span>
+      <div class="guild-name">Builder Guild</div>
+      <div class="guild-domain">Technology &amp; Dashboards</div>
+      <div class="guild-desc">The technical backbone. Builders develop and maintain the community platform, tokenomics tooling, streaming analytics, and the on-chain infrastructure that powers the entire DAO governance layer.</div>
+      <div class="guild-kpi">
+        <span class="kpi-tag">KPI: Uptime &amp; DAU</span>
+        <span class="guild-status">● Forming</span>
+      </div>
+      <ul class="guild-responsibilities">
+        <li>Community dashboard development (this site)</li>
+        <li>$LUX token smart contract deployment</li>
+        <li>AI-assisted content moderation systems</li>
+        <li>Streaming analytics platform</li>
+        <li>On-chain analytics (Year 2)</li>
+      </ul>
+    </div>
+
+    <div class="guild-card">
+      <span class="guild-icon">🏕️</span>
+      <div class="guild-name">Frontier Guild</div>
+      <div class="guild-domain">Events &amp; Compound</div>
+      <div class="guild-desc">Anchored in Saskatchewan's physical landscape. The Frontier Guild manages real-world infrastructure — compound operations, event production, merchandise logistics, and the physical community space that grounds the RoadHouse.</div>
+      <div class="guild-kpi">
+        <span class="kpi-tag">KPI: Event Revenue</span>
+        <span class="guild-status">● Planning</span>
+      </div>
+      <ul class="guild-responsibilities">
+        <li>Saskatchewan compound site acquisition (Year 2)</li>
+        <li>Physical events and festival appearances</li>
+        <li>Merchandise production and fulfillment</li>
+        <li>Community compound infrastructure</li>
+        <li>In-person member meetups</li>
+      </ul>
+    </div>
+
+    <div class="guild-card">
+      <span class="guild-icon">📈</span>
+      <div class="guild-name">Venture Guild</div>
+      <div class="guild-domain">Treasury &amp; Investments</div>
+      <div class="guild-desc">The capital arm. The Venture Guild deploys DAO treasury via governance-approved proposals, sources deals, performs due diligence, and manages the portfolio. First investment targeted at $25k CAD in Year 2.</div>
+      <div class="guild-kpi">
+        <span class="kpi-tag">KPI: Portfolio IRR</span>
+        <span class="guild-status">● Seeding</span>
+      </div>
+      <ul class="guild-responsibilities">
+        <li>Treasury deployment via DAO governance votes</li>
+        <li>Deal sourcing and due diligence</li>
+        <li>Portfolio company management</li>
+        <li>Grant co-application coordination</li>
+        <li>Investor relations and LP reporting</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="investor-cta" style="margin-top: 2px;">
+    <div>
+      <div class="investor-cta-title">Governance via Snapshot &amp; Aragon</div>
+      <div class="investor-cta-sub">All proposals follow a structured lifecycle: Idea Phase (7 days) → Temperature Check → Formal Proposal → 5-day Vote (≥10% quorum) → On-chain Execution via Aragon / Gnosis Safe 3-of-5 multisig → 30-day Post-execution Review. Any Regular+ member can propose.</div>
+    </div>
+    <div class="investor-cta-raise" style="min-width: 200px;">
+      <span class="raise-val">3-of-5</span>
+      <span class="raise-lbl">Gnosis Safe Signers</span>
+      <a href="#contact" class="btn-primary">Join a Guild →</a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- MEMBERSHIP LADDER -->
+<section id="membership">
+  <div class="section-label">◈ Membership Ladder</div>
+  <h2 class="section-title">Six Rungs.<br><em>Earned, Not Purchased.</em></h2>
+  <p class="section-sub">Access is earned through participation, contribution, and demonstrated commitment. Each tier unlocks governance rights, revenue-share allocation, and compound access.</p>
+
+  <div class="ladder">
+    <div class="rung">
+      <div class="rung-num">01</div>
+      <div class="rung-title">Guest</div>
+      <div class="rung-access">Public content access · Introduction Discord channels · No governance rights</div>
+      <div class="rung-threshold">0 $LUX</div>
+      <div class="rung-badge">👁</div>
+    </div>
+    <div class="rung">
+      <div class="rung-num">02</div>
+      <div class="rung-title">Regular</div>
+      <div class="rung-access">Community chat · Minor proposal voting · Forum participation</div>
+      <div class="rung-threshold">100 $LUX</div>
+      <div class="rung-badge">◇</div>
+    </div>
+    <div class="rung">
+      <div class="rung-num">03</div>
+      <div class="rung-title">Ranch Hand</div>
+      <div class="rung-access">Guild participation · Revenue-share eligibility · Voting on treasury proposals</div>
+      <div class="rung-threshold">500 $LUX</div>
+      <div class="rung-badge">◆</div>
+    </div>
+    <div class="rung">
+      <div class="rung-num">04</div>
+      <div class="rung-title">Partner</div>
+      <div class="rung-access">Guild leadership candidacy · Treasury visibility · Sponsorship deal access</div>
+      <div class="rung-threshold">2,000 $LUX</div>
+      <div class="rung-badge">⬡</div>
+    </div>
+    <div class="rung">
+      <div class="rung-num">05</div>
+      <div class="rung-title">Steward</div>
+      <div class="rung-access">Multi-sig treasury co-signer (Gnosis Safe) · Pro-rata treasury surplus distribution</div>
+      <div class="rung-threshold">10,000 $LUX</div>
+      <div class="rung-badge">🔐</div>
+    </div>
+    <div class="rung active">
+      <div class="rung-num">06</div>
+      <div class="rung-title">Praetor</div>
+      <div class="rung-access">Board advisory · Venture deal flow · IP licensing rights · Multi-year demonstrated commitment required</div>
+      <div class="rung-threshold">50,000 $LUX</div>
+      <div class="rung-badge">★</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- TOKEN -->
+<section id="token">
+  <div class="section-label">⬡ $LUX Token</div>
+  <h2 class="section-title">Internal Economics.<br><em>Governance &amp; Utility.</em></h2>
+  <p class="section-sub">$LUX is a governance and utility token. No public sale will proceed without formal securities law opinion from qualified Canadian counsel. Pre-launch distribution via SAFT to accredited investors under NI 45-106.</p>
+
+  <div class="token-grid">
+    <div class="token-panel">
+      <div class="panel-title">Token Allocation</div>
+
+      <svg class="donut-svg" width="200" height="200" viewBox="0 0 200 200" style="display:block;margin:0 auto 32px;">
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#2a2520" stroke-width="28"/>
+        <!-- Community 25% -->
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#c9993a" stroke-width="28"
+          stroke-dasharray="110 329" stroke-dashoffset="0"/>
+        <!-- Treasury 25% -->
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#e8c46a" stroke-width="28"
+          stroke-dasharray="110 329" stroke-dashoffset="-110"/>
+        <!-- Creators 22% -->
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#8b3a1a" stroke-width="28"
+          stroke-dasharray="97 342" stroke-dashoffset="-220"/>
+        <!-- Founders 18% -->
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#4a7c59" stroke-width="28"
+          stroke-dasharray="79 360" stroke-dashoffset="-317"/>
+        <!-- Partners 10% -->
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#6b6050" stroke-width="28"
+          stroke-dasharray="44 395" stroke-dashoffset="-396"/>
+        <text x="100" y="94" text-anchor="middle" fill="#e8c46a" font-family="IBM Plex Mono,monospace" font-size="20" font-weight="500" transform="rotate(90, 100, 100)">$LUX</text>
+        <text x="100" y="112" text-anchor="middle" fill="#6b6050" font-family="IBM Plex Mono,monospace" font-size="9" letter-spacing="2" transform="rotate(90, 100, 100)">GOVERNANCE</text>
+      </svg>
+
+      <div class="token-legend">
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#c9993a"></div>
+          <span class="legend-name">Community</span>
+          <span class="legend-pct">25%</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#e8c46a"></div>
+          <span class="legend-name">DAO Treasury</span>
+          <span class="legend-pct">25%</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#8b3a1a"></div>
+          <span class="legend-name">Creators</span>
+          <span class="legend-pct">22%</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#4a7c59"></div>
+          <span class="legend-name">Founders (4-yr vest)</span>
+          <span class="legend-pct">18%</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#6b6050"></div>
+          <span class="legend-name">Partners &amp; Advisors</span>
+          <span class="legend-pct">10%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="token-panel">
+      <div class="panel-title">Token Utility</div>
+      <div class="token-utilities">
+        <div class="utility-item">
+          <div class="utility-icon">🗳</div>
+          <div>
+            <div class="utility-name">Governance</div>
+            <div class="utility-desc">Snapshot-weighted voting on treasury deployments, guild proposals, and strategic partner deals. 5-day windows, ≥10% quorum required.</div>
+          </div>
+        </div>
+        <div class="utility-item">
+          <div class="utility-icon">🔒</div>
+          <div>
+            <div class="utility-name">Access &amp; Tier Gating</div>
+            <div class="utility-desc">Membership ladder gating (see §Membership). Higher tiers unlock compound access, deal flow, and IP licensing rights.</div>
+          </div>
+        </div>
+        <div class="utility-item">
+          <div class="utility-icon">💰</div>
+          <div>
+            <div class="utility-name">Revenue Share</div>
+            <div class="utility-desc">Pro-rata distribution of designated treasury surplus to Steward-tier and above holders. Governed by DAO vote on each distribution.</div>
+          </div>
+        </div>
+        <div class="utility-item">
+          <div class="utility-icon">⏳</div>
+          <div>
+            <div class="utility-name">Staking</div>
+            <div class="utility-desc">Lockup incentives rewarding long-term alignment. Target velocity V &lt; 5 annually — low velocity = higher token value retention.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 20px; border: 1px solid var(--line); background: rgba(139,58,26,0.08);">
+        <div class="panel-title" style="margin-bottom: 12px; color: var(--rust2);">⚠ Compliance Note</div>
+        <div style="font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.7;">
+          $LUX is structured as a utility/governance token. No public sale without formal securities opinion (Canadian + US counsel). Budget: $15k–$25k Year 1. Pre-launch distribution via SAFT — accredited investors only (NI 45-106).
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">◇ Implementation Roadmap</div>
+  <h2 class="section-title">Three Phases.<br><em>Q2 2026 — Year 2.</em></h2>
+  <p class="section-sub">Phase 1 is active. Foundation work underway in Saskatchewan. Each phase builds on the last — legal first, then community, then physical infrastructure.</p>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">01</div>
+        <div class="phase-tag active">● Active</div>
+      </div>
+      <div class="phase-name">Foundation</div>
+      <div class="phase-period">Q2 2026 — Apr / May / Jun</div>
+      <ul class="phase-items">
+        <li>Incorporate Praetorian Holdings Corp. (Saskatchewan)</li>
+        <li>Trademark Lux mascot + RoadHouse brand (CIPO)</li>
+        <li>Open corporate bank accounts (BDC / RBC Business)</li>
+        <li>Engage SR&ED consultant</li>
+        <li>Launch X, TikTok, and Kick channels</li>
+        <li>Publish community dashboard v1</li>
+        <li>First sponsorship outreach</li>
+        <li>Form four guilds — deploy $LUX on testnet</li>
+        <li>Launch Gnosis Safe treasury wallet</li>
+        <li>Onboard first 10 creators</li>
+        <li>File IRAP pre-screening</li>
+      </ul>
+      <div class="phase-range">
+        <span>Capital Target</span>
+        $0 – $50k
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">02</div>
+        <div class="phase-tag" style="color: var(--rust2); border-color: rgba(196,80,31,0.4);">→ Next</div>
+      </div>
+      <div class="phase-name">Growth</div>
+      <div class="phase-period">Q3 – Q4 2026</div>
+      <ul class="phase-items">
+        <li>Audience target: 20k across all platforms</li>
+        <li>First sponsorship deal closed</li>
+        <li>SaskInnovates application submitted</li>
+        <li>Mitacs MOU — University of Saskatchewan</li>
+        <li>$LUX mainnet deployment</li>
+        <li>First DAO governance vote executed</li>
+        <li>Hire first creators via Studios</li>
+        <li>CMF Experimental application (Q4)</li>
+      </ul>
+      <div class="phase-range">
+        <span>Capital Target</span>
+        $50k – $300k
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">03</div>
+        <div class="phase-tag upcoming">◇ Year 2</div>
+      </div>
+      <div class="phase-name">Compound &amp; Studio</div>
+      <div class="phase-period">Year 2 — 2027</div>
+      <ul class="phase-items">
+        <li>Compound land identified and optioned</li>
+        <li>RoadHouse Studios — 3+ contracted creators</li>
+        <li>CMF Experimental application submitted</li>
+        <li>Venture Guild first investment ($25k CAD)</li>
+        <li>Community dashboard v2 (on-chain analytics)</li>
+        <li>DAO treasury target: $55k CAD</li>
+        <li>Team grows to 4 FTE-equivalent</li>
+        <li>EDC registration (export revenue &gt;$20k)</li>
+      </ul>
+      <div class="phase-range">
+        <span>Capital Target</span>
+        $300k – $2M
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- GRANTS -->
+<section id="grants">
+  <div class="section-label">$ Grant Landscape</div>
+  <h2 class="section-title">Non-Dilutive Capital.<br><em>$265k – $1.05M.</em></h2>
+  <p class="section-sub">The Canadian and Saskatchewan grant ecosystem provides substantial non-dilutive capital directly applicable to RoadHouse's technology, media, and community infrastructure activities.</p>
+
+  <table class="grants-table">
+    <thead>
+      <tr>
+        <th>Program</th>
+        <th>Type</th>
+        <th>Value Range</th>
+        <th>Timing</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <span class="grant-name">Futurpreneur Canada</span>
+          <span class="grant-admin">Futurpreneur Canada · Ages 18–39</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Low-interest loan + mentorship</td>
+        <td class="grant-amount">$20k – $60k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Within 30 days of incorporation</td>
+        <td><span class="grant-status status-target">Priority 1</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">IRAP</span>
+          <span class="grant-admin">National Research Council Canada</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Non-repayable contribution</td>
+        <td class="grant-amount">$50k – $150k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Rolling — apply Month 2</td>
+        <td><span class="grant-status status-target">Priority 2</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">SaskInnovates — Ideation</span>
+          <span class="grant-admin">SaskInnovates · Province of Saskatchewan</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Grant + loan</td>
+        <td class="grant-amount">$50k – $200k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Rolling — apply Month 3</td>
+        <td><span class="grant-status status-target">Priority 3</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">Mitacs Accelerate</span>
+          <span class="grant-admin">Mitacs · U of Saskatchewan / U of Regina</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Internship subsidy</td>
+        <td class="grant-amount">$15k – $60k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Bi-annual — MOU Month 4</td>
+        <td><span class="grant-status status-q2">Q3 2026</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">SR&amp;ED</span>
+          <span class="grant-admin">Canada Revenue Agency</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Refundable tax credit (35%)</td>
+        <td class="grant-amount">$30k – $80k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Annual — file with T2</td>
+        <td><span class="grant-status status-q2">Y1 Return</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">Canada Media Fund</span>
+          <span class="grant-admin">CMF · CRTC-funded · Experimental Stream</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Project fund</td>
+        <td class="grant-amount">$100k – $500k</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Annual Q4 — Year 2</td>
+        <td><span class="grant-status status-y2">Year 2</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="grant-name">Export Development Canada</span>
+          <span class="grant-admin">EDC · Export Revenue &gt;$20k</span>
+        </td>
+        <td style="color: var(--muted); font-family: var(--mono); font-size: 11px;">Working capital / insurance</td>
+        <td class="grant-amount">Variable</td>
+        <td style="font-family: var(--mono); font-size: 11px; color: var(--muted);">Year 2+</td>
+        <td><span class="grant-status status-y2">Year 2</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grants-total">
+    <div>
+      <div class="grants-total-label">Total Non-Dilutive Pipeline</div>
+      <div style="font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px;">Year 1–2 minimum · Conservative estimate</div>
+    </div>
+    <div class="grants-total-val">$265k – $1.05M</div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PROJECTIONS -->
+<section id="projections">
+  <div class="section-label">$ Five-Year Trajectory</div>
+  <h2 class="section-title">Year 3 is the<br><em>Inflection Point.</em></h2>
+  <p class="section-sub">DAO treasury crosses $100k, the compound becomes operational, and the Venture Studio makes its first investments. From Year 4, the model is self-funding.</p>
+
+  <table class="proj-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Year 1</th>
+        <th>Year 2</th>
+        <th>Year 3</th>
+        <th>Year 4</th>
+        <th>Year 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Audience</td>
+        <td>20k</td>
+        <td>100k</td>
+        <td>300k</td>
+        <td>600k</td>
+        <td>1M+</td>
+      </tr>
+      <tr>
+        <td>Monthly Active Community</td>
+        <td>500</td>
+        <td>3,500</td>
+        <td>12k</td>
+        <td>30k</td>
+        <td>70k</td>
+      </tr>
+      <tr>
+        <td>Total Revenue (CAD)</td>
+        <td>$149k</td>
+        <td>$350k</td>
+        <td>$900k</td>
+        <td>$2.2M</td>
+        <td>$5M+</td>
+      </tr>
+      <tr>
+        <td>— of which: Earned</td>
+        <td>$69k</td>
+        <td>$230k</td>
+        <td>$820k</td>
+        <td>$2.16M</td>
+        <td>$4.98M</td>
+      </tr>
+      <tr>
+        <td>Net Operating Profit</td>
+        <td>$30k</td>
+        <td>$80k</td>
+        <td>$270k</td>
+        <td>$750k</td>
+        <td>$2M</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>DAO Treasury (cumulative)</td>
+        <td>$15k</td>
+        <td>$55k</td>
+        <td>$185k ★</td>
+        <td>$600k</td>
+        <td>$1.8M</td>
+      </tr>
+      <tr>
+        <td>Enterprise Value (est.)</td>
+        <td>—</td>
+        <td>$300k</td>
+        <td>$1M</td>
+        <td>$5M</td>
+        <td>$10M+</td>
+      </tr>
+      <tr>
+        <td>Tax Paid (est.)</td>
+        <td>$3k</td>
+        <td>$8k</td>
+        <td>$28k</td>
+        <td>$200k</td>
+        <td>$540k</td>
+      </tr>
+      <tr>
+        <td>Team (FTE-equiv.)</td>
+        <td>1</td>
+        <td>4</td>
+        <td>12</td>
+        <td>25</td>
+        <td>50</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 24px; padding: 28px 32px; border: 1px solid var(--line); background: var(--bg2);">
+    <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px;">Saskatchewan Tax Efficiency</div>
+    <div style="font-family: var(--mono); font-size: 13px; color: var(--muted); line-height: 1.8;">
+      10.5% combined federal/provincial on first $500k active business income · 9% federal + 1.5% provincial (CCPC small-business deduction) · Rate increases to ~27% above the $500k threshold. <span style="color: var(--gold2);">Year 1 effective tax rate: $3k on $30k profit.</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COMMUNITY FEED -->
+<section id="feed">
+  <div class="section-label">📡 Community Feed</div>
+  <h2 class="section-title">Live From the<br><em>RoadHouse.</em></h2>
+  <p class="section-sub">Across X, TikTok, and Kick — all in one place. Follow each platform to stay in the loop.</p>
+
+  <div class="feed-grid">
+    <div class="feed-panel">
+      <div class="feed-platform">
+        <div class="feed-icon">𝕏</div>
+        <div>
+          <div class="feed-platform-name">X / Twitter</div>
+          <div class="feed-platform-handle">@dollywooddole</div>
+        </div>
+        <a href="https://x.com/dollywooddole" target="_blank" class="feed-link">View Profile →</a>
+      </div>
+      <div id="twitter-embed">
+        <a class="twitter-timeline"
+           href="https://twitter.com/dollywooddole"
+           data-tweet-limit="3"
+           data-theme="dark"
+           data-chrome="nofooter noborders transparent">
+        </a>
+        <script async src="https://platform.twitter.com/widgets.js"></script>
+      </div>
+    </div>
+
+    <div class="feed-panel">
+      <div class="feed-platform">
+        <div class="feed-icon">▶</div>
+        <div>
+          <div class="feed-platform-name">Kick Live Stream</div>
+          <div class="feed-platform-handle">kick.com/dollywooddole</div>
+        </div>
+        <a href="https://kick.com/dollywooddole" target="_blank" class="feed-link">Open Channel →</a>
+      </div>
+
+      <div style="aspect-ratio: 16/9; background: var(--bg3); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">⬡</div>
+        <a href="https://kick.com/dollywooddole" target="_blank" class="btn-primary">Watch Live on Kick</a>
+        <div style="font-family: var(--mono); font-size: 10px; color: var(--muted);">Long-form · Up to 12 hrs · Tech / Synthesis / AI</div>
+      </div>
+
+      <div style="border: 1px solid var(--line); padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 18px;">♪</div>
+        <div>
+          <div style="font-family: var(--mono); font-size: 11px; color: var(--cream); margin-bottom: 2px;">TikTok — @roadhousesyndicate</div>
+          <div style="font-family: var(--mono); font-size: 10px; color: var(--muted);">Brand stories · Coconut Cowboy · Community clips</div>
+        </div>
+        <a href="https://www.tiktok.com/@roadhousesyndicate" target="_blank" style="font-family: var(--mono); font-size: 10px; color: var(--gold); text-decoration: none; margin-left: auto;">Follow →</a>
+      </div>
+
+      <div style="border: 1px solid var(--line); padding: 16px 20px; display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 18px;">♪</div>
+        <div>
+          <div style="font-family: var(--mono); font-size: 11px; color: var(--cream); margin-bottom: 2px;">TikTok — @dollywooddole</div>
+          <div style="font-family: var(--mono); font-size: 10px; color: var(--muted);">Personal · Tech · Physics · Synthesis</div>
+        </div>
+        <a href="https://www.tiktok.com/@dollywooddole" target="_blank" style="font-family: var(--mono); font-size: 10px; color: var(--gold); text-decoration: none; margin-left: auto;">Follow →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRINCIPLES -->
+<section id="principles">
+  <div class="section-label">◈ The Code</div>
+  <h2 class="section-title">Six Principles.<br><em>No Compromises.</em></h2>
+  <p class="section-sub">The RoadHouse selects for people who understand that the most powerful room is the one that never appears on social media.</p>
+
+  <div class="principles-grid">
+    <div class="principle">
+      <span class="principle-icon">🤐</span>
+      <div class="principle-name">Discretion</div>
+      <div class="principle-desc">What's discussed in the RoadHouse stays in the RoadHouse. Loose lips have no business here. It's not a policy — it's a personality trait.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-icon">⚡</span>
+      <div class="principle-name">High Standards</div>
+      <div class="principle-desc">We don't lower the bar. Everyone at the table earned their seat through quality and commitment. No shortcuts, no cargo-culting.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-icon">🌐</span>
+      <div class="principle-name">Global Reach</div>
+      <div class="principle-desc">From Saskatchewan to Milwaukee to the internet. The RoadHouse spans disciplines and borders. First-principles thinking travels.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-icon">🔬</span>
+      <div class="principle-name">First Principles</div>
+      <div class="principle-desc">Synthesizers. Physics. Code. Built from the ground up. We ask why before we ask how, and we never assume someone else has it figured out.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-icon">🤝</span>
+      <div class="principle-name">Community</div>
+      <div class="principle-desc">Not a fanbase — a network. Talent is recognized, supported, and put to work on things that matter. Guild membership is earned through contribution.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-icon">🥃</span>
+      <div class="principle-name">Good Taste</div>
+      <div class="principle-desc">In bourbon, coconut vodka, music, and people. One Smooth Ride. The standard isn't arbitrary — it keeps the room worth being in.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- OPPORTUNITIES -->
+<section id="opportunities">
+  <div class="section-label">◇ Opportunities</div>
+  <h2 class="section-title">Talent With Standards<br><em>Always Welcome.</em></h2>
+  <p class="section-sub">The RoadHouse is growing. We're looking for people who show up, do the work, and understand that discretion isn't a policy — it's a personality trait. Inquiries via X DMs or email only.</p>
+
+  <div class="ops-grid">
+    <div class="op-card">
+      <div class="op-badge">Now Hiring</div>
+      <div class="op-title">Translators</div>
+      <div class="op-desc">Expanding the RoadHouse internationally. Skilled translators to adapt content across multiple languages — written and spoken. Long-form stream translation, subtitle work, and cultural localization.</div>
+      <div class="op-tags">
+        <span class="op-tag">Multilingual</span>
+        <span class="op-tag">Content Adaptation</span>
+        <span class="op-tag">Streaming</span>
+        <span class="op-tag">Remote</span>
+      </div>
+      <a href="https://x.com/dollywooddole" target="_blank" class="op-apply">Apply via DM on X →</a>
+    </div>
+
+    <div class="op-card">
+      <div class="op-badge">Now Hiring</div>
+      <div class="op-title">VOD Clip Assistants</div>
+      <div class="op-desc">Long-form streams (8–12 hours) need expert eyes to find the gold. Watch, identify highlights, clip, and organize VOD content with speed and taste. No lazy cuts. High standards apply.</div>
+      <div class="op-tags">
+        <span class="op-tag">Video Editing</span>
+        <span class="op-tag">Kick / VODs</span>
+        <span class="op-tag">Attention to Detail</span>
+        <span class="op-tag">Remote</span>
+      </div>
+      <a href="https://x.com/dollywooddole" target="_blank" class="op-apply">Apply via DM on X →</a>
+    </div>
+
+    <div class="op-card">
+      <div class="op-badge">Open Application</div>
+      <div class="op-title">Rare Talent</div>
+      <div class="op-desc">Don't see your role? If you bring something exceptional — physics, synthesis, software, design, community management, tokenomics — reach out. The RoadHouse is always interested in what we haven't thought of yet.</div>
+      <div class="op-tags">
+        <span class="op-tag">Any Discipline</span>
+        <span class="op-tag">High Standards</span>
+        <span class="op-tag">Discretion Required</span>
+      </div>
+      <a href="mailto:roadhousesyndicate@gmail.com" class="op-apply">Send Email →</a>
+    </div>
+  </div>
+
+  <div style="padding: 24px 32px; border: 1px solid var(--line); margin-top: 2px; background: var(--bg2);">
+    <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;">How to Apply</div>
+    <div style="font-family: var(--mono); font-size: 12px; color: var(--muted);">All applications: <a href="https://x.com/dollywooddole" target="_blank" style="color: var(--gold);">X DMs @dollywooddole</a> or email <a href="mailto:roadhousesyndicate@gmail.com" style="color: var(--gold);">roadhousesyndicate@gmail.com</a> · Include relevant experience and a work sample if applicable · We read everything.</div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- COCONUT COWBOY (minimal product card) -->
+<section id="product" style="padding: 60px;">
+  <div class="section-label">🥥 Product</div>
+  <div class="cc-card">
+    <div class="cc-visual">🥥🤠</div>
+    <div class="cc-info">
+      <div class="cc-label">Praetorian Holdings — Personal Product</div>
+      <div class="cc-title">Coconut Cowboy</div>
+      <div class="cc-tagline">One Smooth Ride · Island Calm Meets Country Grit</div>
+      <div class="cc-abv">22% ABV · Alberta, Canada &amp; Milwaukee, USA</div>
+      <div class="cc-desc">Coconut-flavored vodka born in Alberta and Milwaukee. Smooth enough for a cocktail, bold enough to stand alone. Available in select retailers across both markets.</div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="https://coconutcowboy.ca/" target="_blank" class="btn-primary">Visit Site ↗</a>
+        <a href="mailto:daltonellscheid@gmail.com" class="btn-ghost">Business Inquiries</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- INVESTOR CTA -->
+<section style="padding: 60px; background: var(--bg2);">
+  <div class="section-label">$ Investor Relations</div>
+  <div class="investor-cta" style="margin-top: 0;">
+    <div>
+      <div class="investor-cta-title">Phase 1–2 Seed Round — Open</div>
+      <div class="investor-cta-sub">
+        Instrument: SAFE or SAFT (investor's choice) · Valuation cap: $500k–$2M · 20% discount on Series A conversion<br>
+        Use of funds: Incorporation ($8k) · Trademarks ($3k) · Infrastructure ($12k) · Creator contracts ($20k) · Marketing ($15k) · SR&amp;ED consultant ($8k) · Working capital ($84k)<br>
+        Series A milestones: 20k audience · $80k ARR · $LUX mainnet live · First DAO vote passed
+      </div>
+    </div>
+    <div class="investor-cta-raise">
+      <span class="raise-val">$50k–150k</span>
+      <span class="raise-lbl">CAD Seed Ask</span>
+      <a href="mailto:roadhousesyndicate@gmail.com" class="btn-primary">Request Term Sheet →</a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">✉ Get in Touch</div>
+  <h2 class="section-title">Serious Inquiries.<br><em>Serious People.</em></h2>
+  <p class="section-sub">Business inquiries, investor conversations, guild applications, and partnership discussions. We read and respond to every legitimate message.</p>
+
+  <div class="contact-grid">
+    <div class="contact-panel">
+      <div class="contact-channels">
+        <a href="mailto:roadhousesyndicate@gmail.com" class="contact-ch">
+          <div class="ch-icon">✉</div>
+          <div>
+            <div class="ch-label">Business Email</div>
+            <div class="ch-val">roadhousesyndicate@gmail.com</div>
+          </div>
+        </a>
+        <a href="mailto:daltonellscheid@gmail.com" class="contact-ch">
+          <div class="ch-icon">✉</div>
+          <div>
+            <div class="ch-label">Direct / Founder</div>
+            <div class="ch-val">daltonellscheid@gmail.com</div>
+          </div>
+        </a>
+        <a href="https://x.com/dollywooddole" target="_blank" class="contact-ch">
+          <div class="ch-icon">𝕏</div>
+          <div>
+            <div class="ch-label">X / Twitter DMs</div>
+            <div class="ch-val">@dollywooddole</div>
+          </div>
+        </a>
+        <a href="https://kick.com/dollywooddole" target="_blank" class="contact-ch">
+          <div class="ch-icon">▶</div>
+          <div>
+            <div class="ch-label">Kick Stream</div>
+            <div class="ch-val">kick.com/dollywooddole</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="padding: 20px; border: 1px solid var(--line); background: var(--bg2);">
+        <div style="font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px;">Entity</div>
+        <div style="font-family: var(--mono); font-size: 12px; color: var(--cream); line-height: 1.8;">
+          Praetorian Holdings Corp.<br>
+          <span style="color: var(--muted);">Saskatchewan, Canada · CBCA/Provincial · CCPC</span><br>
+          <span style="color: var(--muted);">Dalton Ellscheid — Founder &amp; CTO</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-panel">
+      <form onsubmit="handleForm(event)">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" placeholder="Your name" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="your@email.com" required>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Inquiry Type</label>
+          <select class="form-select">
+            <option value="">Select a category</option>
+            <option>Investor — SAFE / SAFT</option>
+            <option>Strategic Partnership</option>
+            <option>Guild Application</option>
+            <option>Sponsorship Inquiry</option>
+            <option>Media / Press</option>
+            <option>Coconut Cowboy — Retail</option>
+            <option>Employment Application</option>
+            <option>General Question</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Message</label>
+          <textarea class="form-textarea" placeholder="Keep it concise. Standards apply."></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">Send Message →</button>
+        <div id="form-confirm" style="display:none; margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--green2); text-align: center; letter-spacing: 0.1em;">✓ Received — we'll be in touch.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">RoadHouse</div>
+      <div class="footer-tagline">Where Standards Matter · Saskatchewan, Canada</div>
+      <div style="font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.7; max-width: 320px;">
+        A creator-owned ecosystem at the intersection of streaming media, DAO governance, and physical infrastructure. IP owned by Praetorian Holdings Corp.
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Platforms</div>
+      <ul class="footer-links">
+        <li><a href="https://kick.com/dollywooddole" target="_blank">Kick Stream</a></li>
+        <li><a href="https://x.com/dollywooddole" target="_blank">X / Twitter</a></li>
+        <li><a href="https://www.tiktok.com/@roadhousesyndicate" target="_blank">TikTok (Brand)</a></li>
+        <li><a href="https://www.tiktok.com/@dollywooddole" target="_blank">TikTok (Personal)</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Community</div>
+      <ul class="footer-links">
+        <li><a href="#guilds">Guild System</a></li>
+        <li><a href="#membership">Membership Ladder</a></li>
+        <li><a href="#token">$LUX Token</a></li>
+        <li><a href="#opportunities">Opportunities</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <ul class="footer-links">
+        <li><a href="mailto:roadhousesyndicate@gmail.com">roadhousesyndicate@gmail.com</a></li>
+        <li><a href="mailto:daltonellscheid@gmail.com">daltonellscheid@gmail.com</a></li>
+        <li><a href="https://coconutcowboy.ca/" target="_blank">Coconut Cowboy</a></li>
+        <li><a href="#contact">Send a Message</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Praetorian Holdings Corp. · All intellectual property reserved · Saskatchewan, Canada</div>
+    <div class="footer-entity">
+      Discretion · High Standards · One Smooth Ride<br>
+      Confidential — not for unauthorised distribution
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Form handler
+  function handleForm(e) {
+    e.preventDefault();
+    document.getElementById('form-confirm').style.display = 'block';
+    e.target.reset();
+    setTimeout(() => {
+      document.getElementById('form-confirm').style.display = 'none';
+    }, 5000);
+  }
+
+  // Intersection observer for subtle section reveals
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.05 });
+
+  document.querySelectorAll('.guild-card, .phase, .op-card, .principle, .metric-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
